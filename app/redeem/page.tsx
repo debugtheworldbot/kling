@@ -1,4 +1,6 @@
 import Generate from "@/components/Generate";
+import { createClient } from "@/utils/supabase/server";
+import { cookies } from "next/headers";
 import React from "react";
 
 const validateLicense = async (id: string) => {
@@ -15,12 +17,22 @@ const validateLicense = async (id: string) => {
   }).then((r) => r.json());
   return res;
 };
+const getInputs = async (key: string) => {
+  const cookieStore = cookies();
+  const supabase = createClient(cookieStore);
+  const { data } = await supabase
+    .from("prompts")
+    .select("*")
+    .eq("license_key", key);
+  return data ? data[0] : null;
+};
 export default async function Page({
   searchParams,
 }: {
   searchParams: { license_key: string };
 }) {
   const res = await validateLicense(searchParams.license_key);
+  const input = await getInputs(searchParams.license_key);
   return (
     <div className="min-h-screen flex flex-col justify-center items-center px-12">
       <div>
@@ -34,7 +46,14 @@ export default async function Page({
         </p>
       </div>
       {res.error && <div>error: {res.error}</div>}
-      {res.valid && <Generate license_key={searchParams.license_key} />}
+      {res.valid && (
+        <div className="w-full">
+          {input?.input && (
+            <p className="text-center">Your previous input: {input?.input}</p>
+          )}
+          <Generate license_key={searchParams.license_key} />
+        </div>
+      )}
     </div>
   );
 }
