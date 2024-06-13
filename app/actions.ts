@@ -9,7 +9,10 @@ export async function createPrompt(license_key: string, formData: FormData) {
   const res = await validateLicense(license_key);
   console.log(res);
   if (!res.valid) {
-    throw new Error("invalid key");
+    return {
+      success: false,
+      content: "invalid key",
+    };
   }
   const cookieStore = cookies();
   const supabase = createClient(cookieStore);
@@ -17,7 +20,8 @@ export async function createPrompt(license_key: string, formData: FormData) {
   const input = (formData.get("input") as string) || "";
   if (!input) {
     return {
-      message: "no input",
+      success: false,
+      content: "no input",
     };
   }
 
@@ -26,7 +30,10 @@ export async function createPrompt(license_key: string, formData: FormData) {
     .upsert([{ license_key, input }], { onConflict: "license_key" })
     .select();
   revalidatePath("/");
-  console.log(data, error);
+  return {
+    success: true,
+    content: "success",
+  };
 
   // mutate data
   // revalidate cache
