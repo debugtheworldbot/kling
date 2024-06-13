@@ -14,12 +14,16 @@ const validateLicense = async (id: string) => {
   }).then((r) => r.json());
   return res;
 };
-export default async function Page({ params }: { params: { id: string } }) {
-  const res = await validateLicense(params.id);
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: { license_key: string };
+}) {
+  const res = await validateLicense(searchParams.license_key);
   return (
     <div className="min-h-screen flex flex-col justify-center items-center">
       <div>
-        your key is: {params.id}
+        your key is: {searchParams.license_key}
         <p className="text-center">
           {res.valid ? (
             <span className="text-green-400">valid</span>
