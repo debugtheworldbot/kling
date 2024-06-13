@@ -16,16 +16,14 @@ export default function Generate({ license_key }: { license_key: string }) {
     const cookieStore = cookies();
     const supabase = createClient(cookieStore);
 
-    const rawFormData = {
-      input: formData.get("input"),
-    };
-    console.log({ rawFormData });
+    const input = (formData.get("input") as string) || "";
 
     const { data, error } = await supabase
       .from("prompts")
-      .insert([{ license_key: "someValue", input: "otherValue" }])
+      .upsert([{ license_key, input }], { onConflict: "license_key" })
       .select();
     console.log(data, error);
+
     // mutate data
     // revalidate cache
   }
