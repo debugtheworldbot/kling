@@ -1,11 +1,26 @@
 import React from "react";
-import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 import { createClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 import { validateLicense } from "@/utils/utils";
+import { SubmitButton } from "./SubmitBtn";
+import { revalidatePath } from "next/cache";
 
-export default function Generate({ license_key }: { license_key: string }) {
+const getInputs = async (key: string) => {
+  const cookieStore = cookies();
+  const supabase = createClient(cookieStore);
+  const { data } = await supabase
+    .from("prompts")
+    .select("*")
+    .eq("license_key", key);
+  return data ? data[0] : null;
+};
+export default async function Generate({
+  license_key,
+}: {
+  license_key: string;
+}) {
+  const input = await getInputs(license_key);
   async function create(formData: FormData) {
     "use server";
     const res = await validateLicense(license_key);
@@ -22,6 +37,7 @@ export default function Generate({ license_key }: { license_key: string }) {
       .from("prompts")
       .upsert([{ license_key, input }], { onConflict: "license_key" })
       .select();
+    revalidatePath("/");
     console.log(data, error);
 
     // mutate data
@@ -29,14 +45,15 @@ export default function Generate({ license_key }: { license_key: string }) {
   }
 
   return (
-    <form action={create} className="mt-6 w-full">
+    <form action={create} className="mt-6 w-full flex flex-col gap-3">
+      <p className="text-center">Your previous input: {input?.input}</p>
       <Textarea
         name="input"
         placeholder="your prompt here..."
         className="w-full"
         rows={5}
       />
-      <Button className="mt-2 mx-auto block">SEND</Button>
+      <SubmitButton className="mx-auto block">SEND</SubmitButton>
     </form>
   );
 }
