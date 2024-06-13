@@ -1,3 +1,4 @@
+import Generate from "@/components/Generate";
 import React from "react";
 
 const validateLicense = async (id: string) => {
@@ -21,7 +22,7 @@ export default async function Page({
 }) {
   const res = await validateLicense(searchParams.license_key);
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center">
+    <div className="min-h-screen flex flex-col justify-center items-center px-12">
       <div>
         your key is: {searchParams.license_key}
         <p className="text-center">
@@ -33,6 +34,7 @@ export default async function Page({
         </p>
       </div>
       {res.error && <div>error: {res.error}</div>}
+      <Generate />
     </div>
   );
 }
