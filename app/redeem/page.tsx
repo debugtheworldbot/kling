@@ -34,7 +34,7 @@ export default async function Page({
         </p>
       </div>
       {res.error && <div>error: {res.error}</div>}
-      <Generate />
+      <Generate license_key={searchParams.license_key} />
     </div>
   );
 }
